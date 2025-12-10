@@ -6,4 +6,5 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserStateService {
     private static final Map<Long, UserState> state = new ConcurrentHashMap<Long, UserState>();
 
+
 }
