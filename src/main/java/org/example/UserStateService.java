@@ -10,4 +10,8 @@ public class UserStateService {
     public static void arg() {
         System.out.println("ААА");
     }
+
+    public static void r() {
+        System.out.println("FFF");
+    }
 }
