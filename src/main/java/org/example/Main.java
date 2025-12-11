@@ -38,7 +38,7 @@ public class Main {
                 case "start", "menu" : DefaultMethods.showMenu(chatId); break;
                 case "help" : DefaultMethods.help(chatId); break;
                 case "chatGPT" : DefaultMethods.chatGpt(chatId); break;
-                case "weather" : Weather.run(update, chatId); break;
+                case "weather" : Weather.run(update); break;
                 default: DefaultMethods.unknown(chatId);
             }
 

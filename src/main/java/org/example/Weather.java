@@ -1,6 +1,7 @@
 package org.example;
 
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
@@ -25,23 +26,23 @@ public class Weather {
 
 
     //Main
-    public static void run(Update update, long chatId) {
-        showCities(chatId);
-        String data = update.callbackQuery().data();
+    public static void run(Update update) {
+        if(update.message() != null && update.message().text() != null) {
+            long chatId = update.message().chat().id();
+            String text = update.message().text();
 
-        switch (data) {
-            case "add_city" : {
-                addNewCity(update, chatId);
-                break;
-            }
-            case "remove_city" : {
-                removeCity(update, chatId);
-                break;
-            }
-            default: {
-                String city = update.message().text();
-                showWeather(city, chatId);
-            }
+
+        }
+
+        else if(update.callbackQuery() != null ) {
+            long chatId = update.callbackQuery().message().chat().id();
+            String data= update.callbackQuery().data();
+
+
+        }
+        else {
+            long chatId = update.message().chat().id();
+            DefaultMethods.unknown(chatId);
         }
     }
 
