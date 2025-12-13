@@ -1,7 +1,6 @@
 package org.example;
 
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
@@ -14,7 +13,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 
@@ -27,23 +25,61 @@ public class Weather {
 
     //Main
     public static void run(Update update) {
-        if(update.message() != null && update.message().text() != null) {
-            long chatId = update.message().chat().id();
-            String text = update.message().text();
+        try{
+            if(update.callbackQuery() != null ) {
+                long chatId = update.callbackQuery().message().chat().id();
+                String data= update.callbackQuery().data();
+                if("weather".equals(data)) {
+                    showCities(chatId);
+                    return;
+                }
 
+                if(data.equals("add_city")) {
+                    UserStateService.state.put(chatId, UserState.AWAITING_CITY_NAME);
+                    bot.execute(new SendMessage(chatId, "Введите название города"));
+                    return;
+                }
+
+                if(data.equals("remove_city")) {
+                    showCitiesForRemove(chatId, cities);
+                    return;
+                }
+
+                if(data.startsWith("remove:")) {
+                    String citiForRemove = data.substring("remove:".length());
+                    cities.remove(citiForRemove);
+                    bot.execute(new SendMessage(chatId, "Удален город " + citiForRemove));
+                    showCities(chatId);
+                    return;
+                }
+
+                if(data.startsWith("weather_")) {
+                    String cityName = data.substring("weather_".length());
+                    showWeather(cityName, chatId);
+                    return;
+                }
+
+            }
+
+            if(update.message() != null && update.message().text() != null) {
+                long chatId = update.message().chat().id();
+                String text = update.message().text();
+
+                if(UserStateService.getState(chatId).equals(UserState.AWAITING_CITY_NAME)) {
+                    cities.add(text.trim());
+                    UserStateService.clearState(chatId);
+                    bot.execute(new SendMessage(chatId, "Город добавлен"));
+                    showCities(chatId);
+                    return;
+                }
+                DefaultMethods.unknown(chatId);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Exception " + e.getMessage());
 
         }
 
-        else if(update.callbackQuery() != null ) {
-            long chatId = update.callbackQuery().message().chat().id();
-            String data= update.callbackQuery().data();
-
-
-        }
-        else {
-            long chatId = update.message().chat().id();
-            DefaultMethods.unknown(chatId);
-        }
     }
 
 
@@ -138,29 +174,17 @@ public class Weather {
     }
 
 
-    //Добавление нового города
-    public static void addNewCity(Update update, long chatId) {
-        bot.execute(new SendMessage(chatId, "Название города:\n"));
-        String newCityName = update.message().text();
-        cities.add(newCityName);
-    }
-
-
-    //Удаление города
-    public static void removeCity(Update update, long chatId) {
-        List<InlineKeyboardButton[]> list = new LinkedList<>();
-        for (int i = 0; i < cities.size(); i++) {
+    //Отображение городов для удаления
+    public static void showCitiesForRemove(long chatId, List<String> cities) {
+        List<InlineKeyboardButton[]> list = new ArrayList<>();
+        for(String city : cities) {
             list.add(new InlineKeyboardButton[]{
-                    new InlineKeyboardButton(cities.get(i)).callbackData("weather_" + cities.get(i))
+                    new InlineKeyboardButton(city).callbackData("remove:" + city.trim())
             });
         }
         InlineKeyboardMarkup ikm = new InlineKeyboardMarkup(list.toArray(new InlineKeyboardButton[0][0]));
         bot.execute(new SendMessage(chatId, "Выберите город").replyMarkup(ikm));
-        String data = update.callbackQuery().data();
-        cities.remove(data.substring(8));
     }
-
-
 
 
 }

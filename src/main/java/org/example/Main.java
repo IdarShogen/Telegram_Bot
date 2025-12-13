@@ -22,6 +22,11 @@ public class Main {
             long chatId = update.message().chat().id();
             String text = update.message().text();
 
+            if (UserStateService.getState(chatId) == UserState.AWAITING_CITY_NAME) {
+                Weather.run(update);
+                return;
+            }
+
             switch (text) {
                 case "/start": DefaultMethods.start(chatId); break;
                 default: DefaultMethods.unknown(chatId);
@@ -39,7 +44,7 @@ public class Main {
                 case "help" : DefaultMethods.help(chatId); break;
                 case "chatGPT" : DefaultMethods.chatGpt(chatId); break;
                 case "weather" : Weather.run(update); break;
-                default: DefaultMethods.unknown(chatId);
+                default: Weather.run(update);
             }
 
         }
