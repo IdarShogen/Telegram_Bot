@@ -4,6 +4,7 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SetMyCommands;
 
 
@@ -44,6 +45,7 @@ public class Main {
                 case "help" : DefaultMethods.help(chatId); break;
                 case "chatGPT" : DefaultMethods.chatGpt(chatId); break;
                 case "weather" : Weather.run(update); break;
+                case "scores" : bot.execute(new SendMessage(chatId, Scores.getScores())); break;
                 default: Weather.run(update);
             }
 
