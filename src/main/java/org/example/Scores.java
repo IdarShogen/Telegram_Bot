@@ -57,34 +57,43 @@ public class Scores {
     }
 
     public static String parseScores(String html) {
-        Document doc = (Document) Jsoup.parse(html);
-        Element table = doc.select("table").first();
+        try {
+            Document doc = (Document) Jsoup.parse(html);
+            Element table = doc.select("table.clTableBold").last();
 
-        Elements rows = table.select("tbody > tr");
+            Elements rows = table.select("tbody > tr");
 
 
-        if (rows.isEmpty()) return "Ошибка: таблица пуста";
+            if (rows.isEmpty()) return "Ошибка: таблица пуста";
 
-        StringBuilder result = new StringBuilder();
+            StringBuilder result = new StringBuilder();
+            result.append("📊Текущие баллы:").append("\n\n");
+            for (int i = 2; i < rows.size(); i++) {
+                Elements cells = rows.get(i).select("td");
 
-        for(Element row : rows) {
-            Elements cells = row.select("td");
+                String[] array = cells.get(1).text().split(" ");
+                String certifications = "зачет экзамен дифференцированный зачет";
+                StringBuilder typeCertification = new StringBuilder();
+                StringBuilder discipline = new StringBuilder();
+                for(String element : array) {
+                    if(certifications.contains(element.toLowerCase())) typeCertification.append(element).append(" ");
+                    else discipline.append(element).append(" ");
+                }
 
-            if(cells.size() < 8) continue;
+                String totalScore = cells.get(18).text();
 
-            String number = cells.get(0).text();
-            String subject = cells.get(1).text();
-            String totalScore = cells.get(6).text();
+                result.append(discipline.toString().trim()).append("\n")
+                        .append(typeCertification.toString().trim()).append("\n")
+                        .append("Баллы: ").append(totalScore).append("\n\n");
+            }
 
-            if(subject.trim().isEmpty()) continue;
-
-            result.append(number).append(". ")
-                    .append(subject).append("\n")
-                    .append("   Баллы: ").append(totalScore).append("\n\n");
+            return result.toString();
         }
-
-        return result.toString();
+        catch (Exception e) {
+            return "Exception " + e.getMessage();
+        }
     }
+
 
 
     public static String getScores() {
